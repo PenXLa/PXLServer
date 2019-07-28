@@ -2,7 +2,6 @@ package com.pxl;
 
 import com.pxl.netKernel.ClientConnection;
 import com.pxl.netKernel.Listener;
-import com.pxl.netKernel.Package;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -26,7 +25,7 @@ public class Main {
             if (s.equals("disconnect")) {
                 c.disconnect();
             } else {
-                Package pak = new Package(1);
+                CompressedPackage pak = new CompressedPackage(1);
                 pak.putString(s);
                 pak.pack();
                 c.sendPackage(pak);
@@ -42,7 +41,7 @@ class Connection extends ClientConnection {
     }
 
     @Override
-    protected void onReceived(Package pak) {
+    protected void onReceived(CompressedPackage pak) {
         System.out.println(pak.readString(4));
     }
 

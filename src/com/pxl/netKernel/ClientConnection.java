@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 
 public class ClientConnection {
     public static final byte POINTER_SIZE = Integer.SIZE/8;//指针/package头长度，无法修改，因为代码中很多地方都是直接申请的int
@@ -21,7 +20,7 @@ public class ClientConnection {
 
 
 
-    protected void onReceived(Package pak) {
+    protected void onReceived(byte[] pak) {
 
     }
     protected void onDisconnect() {
@@ -45,10 +44,10 @@ public class ClientConnection {
         }
     }
 
-    public void sendPackage(Package pak) throws IOException {
-        byte[] dataWithHead = new byte[pak.data.length + POINTER_SIZE];
-        System.arraycopy(PackageUtils.integer2bin(pak.data.length, POINTER_SIZE), 0, dataWithHead, 0, POINTER_SIZE);
-        System.arraycopy(pak.data, 0, dataWithHead, POINTER_SIZE, pak.data.length);
+    public void sendPackage(byte[] pak) throws IOException {
+        byte[] dataWithHead = new byte[pak.length + POINTER_SIZE];
+        System.arraycopy(PackageUtils.integer2bin(pak.length, POINTER_SIZE), 0, dataWithHead, 0, POINTER_SIZE);
+        System.arraycopy(pak, 0, dataWithHead, POINTER_SIZE, pak.length);
         PackageUtils.sendRawData(socket, dataWithHead);
     }
 
@@ -68,7 +67,7 @@ class Receiver extends Thread {
         try {
             InputStream is = cli.socket.getInputStream();
             while(true) {
-                Package pak = getPack(is, cli.POINTER_SIZE);
+                byte[] pak = getPack(is, cli.POINTER_SIZE);
                 if (pak!=null) cli.onReceived(pak);
             }
         } catch (IOException e) {
@@ -78,7 +77,7 @@ class Receiver extends Thread {
 
 
 
-    private Package getPack(InputStream is, int headSize) throws IOException {
+    private byte[] getPack(InputStream is, int headSize) throws IOException {
         byte[] data = null;
 
         byte[] sizeb = new byte[headSize];
@@ -96,7 +95,7 @@ class Receiver extends Thread {
         data = new byte[binsize];
 
         if (is.read(data)==-1) throw new SocketException();//read数据顺便判断是否断开连接
-        return new Package(data);
+        return data;
     }
 }
 
