@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.pxl";
+option java_outer_classname = "Package";
+option csharp_namespace = "Package";
+
+message ChatMessage {
+    string txt = 1;
+    int64 tag = 2;
+}

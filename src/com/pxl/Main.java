@@ -1,5 +1,6 @@
 package com.pxl;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.pxl.netKernel.ClientConnection;
 import com.pxl.netKernel.Listener;
 
@@ -25,9 +26,9 @@ public class Main {
             if (s.equals("disconnect")) {
                 c.disconnect();
             } else {
-                CompressedPackage pak = new CompressedPackage(1);
-                pak.putString(s);
-                pak.pack();
+                byte[] pak = Package.ChatMessage.newBuilder()
+                        .setTxt(s)
+                        .setTag(System.currentTimeMillis()).build().toByteArray();
                 c.sendPackage(pak);
             }
 
@@ -41,8 +42,15 @@ class Connection extends ClientConnection {
     }
 
     @Override
-    protected void onReceived(CompressedPackage pak) {
-        System.out.println(pak.readString(4));
+    protected void onReceived(byte[] pak) {
+        Package.ChatMessage cm = null;
+        try {
+            cm = Package.ChatMessage.parseFrom(pak);
+            System.out.println(cm.getTxt() + " " + cm.getTag());
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
