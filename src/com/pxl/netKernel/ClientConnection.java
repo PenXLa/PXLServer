@@ -87,14 +87,15 @@ class Receiver extends Thread {
             sizeb[i] = (byte)b;
         }
         int binsize= (int) PackageUtils.bin2integer(sizeb, 0, headSize);
-        if (binsize==0) {
-            System.err.println("Warning: getPack returned null pack");//调试
-            return null;//接收到空包，暂时不throw SocketException，先返回个空包试试
-        }
 
         data = new byte[binsize];
 
-        if (is.read(data)==-1) throw new SocketException();//read数据顺便判断是否断开连接
+        for (int readlen = 0; readlen < binsize;) {
+            int len = is.read(data, readlen, binsize-readlen);
+            if (len==-1) throw new SocketException();//read数据顺便判断是否断开连接
+            readlen += len;
+        }
+
         return data;
     }
 }
